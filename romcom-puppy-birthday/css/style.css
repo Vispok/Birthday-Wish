@@ -436,3 +436,203 @@ button.primary {
 .glow {
     animation: glowPulse 2s infinite;
 }
+
+/* ===== ADD THESE STYLES TO YOUR EXISTING CSS ===== */
+
+/* Fix for text visibility - ensure text is above elements */
+#text-overlay {
+    position: relative;
+    z-index: 200 !important;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(5px);
+    padding: 15px 25px;
+    border-radius: 50px;
+    margin: 10px auto;
+    max-width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.5);
+    pointer-events: none; /* Allow clicks to pass through to elements behind */
+}
+
+#text-overlay p {
+    margin: 5px 0;
+    color: #4a4a4a;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+}
+
+/* Fix for controls - bring them up and make them visible */
+#controls {
+    position: relative;
+    z-index: 250 !important;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    pointer-events: auto;
+}
+
+#controls button {
+    background: linear-gradient(135deg, #FF9EB5, #FF6B8B);
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(255, 107, 139, 0.4);
+    font-weight: 600;
+    border: 2px solid white;
+    position: relative;
+    z-index: 300;
+}
+
+/* Fix for interactive area - lower z-index so text appears above */
+#interactive-area {
+    z-index: 100 !important;
+}
+
+/* Task elements - make sure they don't cover text */
+.task-element {
+    z-index: 150 !important;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+    transition: all 0.3s ease;
+}
+
+/* Target zones - make them visible but not blocking */
+.target-zone {
+    z-index: 120 !important;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px dashed #FFB6C1;
+    backdrop-filter: blur(2px);
+}
+
+/* Puppy container - adjust size and position */
+.puppy-container {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#puppy, #puppy-emoji {
+    width: 180px !important;
+    height: 180px !important;
+    font-size: 150px !important;
+}
+
+/* Progress dots - keep at bottom but not covering text */
+#progress {
+    z-index: 50 !important;
+    bottom: 20px;
+}
+
+/* Fix for dance task dots */
+.rhythm-dot {
+    z-index: 160 !important;
+    background: white;
+    border: 3px solid #FFB6C1;
+    color: #4a4a4a;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.rhythm-dot.active {
+    background: #FF9EB5;
+    color: white;
+    border-color: #FF6B8B;
+    transform: scale(1.2);
+}
+
+/* Fix for poster elements */
+.poster {
+    z-index: 170 !important;
+    background: white;
+    border: 3px solid #FFB6C1;
+    color: #4a4a4a;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.poster-slot {
+    z-index: 130 !important;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px dashed #FFB6C1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #FF6B8B;
+}
+
+/* Fix for gift task */
+#gift-box {
+    z-index: 180 !important;
+    border: 4px solid white;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+#gift-ribbon, #gift-seal {
+    z-index: 190 !important;
+}
+
+/* Fix for text instructions inside tasks */
+.task-instruction {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #4a4a4a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 300 !important;
+    border: 2px solid #FFB6C1;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Animation for puppy emoji */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    #puppy, #puppy-emoji {
+        width: 140px !important;
+        height: 140px !important;
+        font-size: 120px !important;
+    }
+    
+    #text-overlay {
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
+    
+    #controls button {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+    
+    .rhythm-dot {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .poster {
+        width: 70px;
+        height: 100px;
+        font-size: 30px;
+    }
+    
+    .poster-slot {
+        width: 70px;
+        height: 110px;
+    }
+}
