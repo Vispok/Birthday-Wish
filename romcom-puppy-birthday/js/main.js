@@ -33,7 +33,12 @@ console.log('Elements loaded:', {
     controls: !!elements.controls,
     interactiveArea: !!elements.interactiveArea
 });
+// Add near the top of your file, after elements definition
+// Fix for multiple animations
+let currentAnimation = null;
 
+// Replace or update your setPuppy function's emoji fallback part
+// When using emoji fallback, make sure to hide any previous emoji
 // ==================== PUPPY ANIMATION (No external files needed) ====================
 function setPuppy(animationType, autoReset = true) {
     // Hide Lottie player
@@ -299,175 +304,123 @@ function completeTask(taskId) {
 }
 
 // ==================== TASK 1: DECORATE (Fixed Version) ====================
+// ==================== TASK 1: DECORATE (Fixed Layout) ====================
 function renderDecorateTask() {
-    console.log('Rendering decorate task - FIXED VERSION');
+    console.log('Rendering decorate task - FIXED LAYOUT');
     
-    if (!elements.interactiveArea) {
-        console.error('Interactive area not found');
-        return;
-    }
+    // Clear any existing elements
+    elements.interactiveArea.innerHTML = '';
     
-    showText([
-        "Let's add some decorations!",
-        "Tap each item to place it"
-    ]);
+    // Show text with better positioning
+    elements.textOverlay.innerHTML = `
+        <p class="fade-line visible" style="font-size: 1.2rem; margin-bottom: 5px;">Let's add some decorations!</p>
+        <p class="fade-line visible" style="font-size: 0.9rem; opacity: 0.8;">Tap each item to place it</p>
+    `;
     
+    // Items to place - better positioned
     const items = [
-        { id: 'banner', emoji: '🎊', label: 'Banner', x: 30, y: 40 },
-        { id: 'lights', emoji: '✨', label: 'Lights', x: 50, y: 30 },
-        { id: 'balloons', emoji: '🎈', label: 'Balloons', x: 70, y: 50 }
+        { id: 'banner', emoji: '🎊', label: 'Banner', x: 20, y: 60 },
+        { id: 'lights', emoji: '✨', label: 'Lights', x: 40, y: 50 },
+        { id: 'balloons', emoji: '🎈', label: 'Balloons', x: 60, y: 65 }
+    ];
+    
+    // Target positions - where items should go
+    const targets = [
+        { id: 'target-banner', emoji: '🎊', x: 70, y: 25, label: 'Banner spot' },
+        { id: 'target-lights', emoji: '✨', x: 25, y: 30, label: 'Lights spot' },
+        { id: 'target-balloons', emoji: '🎈', x: 50, y: 35, label: 'Balloons spot' }
     ];
     
     let placedCount = 0;
     
-    items.forEach((item) => {
+    // Create draggable items
+    items.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.id = item.id;
-        itemEl.style.position = 'absolute';
+        itemEl.className = 'task-element';
         itemEl.style.left = item.x + '%';
         itemEl.style.top = item.y + '%';
-        itemEl.style.fontSize = '80px';
-        itemEl.style.cursor = 'pointer';
-        itemEl.style.filter = 'drop-shadow(0 10px 15px rgba(0,0,0,0.2))';
-        itemEl.style.transition = 'all 0.3s ease';
-        itemEl.style.zIndex = '100';
+        itemEl.style.fontSize = '70px';
+        itemEl.style.cursor = 'grab';
         itemEl.style.transform = 'translate(-50%, -50%)';
         itemEl.textContent = item.emoji;
+        itemEl.setAttribute('draggable', 'true');
+        itemEl.setAttribute('data-item', item.id);
         
-        // Add label
+        // Add small label
         const label = document.createElement('div');
-        label.style.fontSize = '14px';
+        label.style.fontSize = '12px';
         label.style.textAlign = 'center';
-        label.style.color = '#555';
-        label.style.background = 'rgba(255,255,255,0.8)';
-        label.style.padding = '4px 8px';
-        label.style.borderRadius = '20px';
+        label.style.background = 'rgba(255,255,255,0.7)';
+        label.style.padding = '2px 6px';
+        label.style.borderRadius = '10px';
         label.style.marginTop = '5px';
-        label.style.whiteSpace = 'nowrap';
         label.textContent = item.label;
         itemEl.appendChild(label);
         
-        // Click handler
-        itemEl.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            if (this.classList.contains('placed')) return;
-            
-            // Mark as placed
-            this.classList.add('placed');
-            this.style.opacity = '0.7';
-            this.style.transform = 'translate(-50%, -50%) scale(0.9)';
-            this.style.cursor = 'default';
-            
-            // Remove click handler
-            this.onclick = null;
-            
-            // Show checkmark
-            const check = document.createElement('div');
-            check.style.position = 'absolute';
-            check.style.top = '-10px';
-            check.style.right = '-10px';
-            check.style.background = '#4ECDC4';
-            check.style.color = 'white';
-            check.style.width = '30px';
-            check.style.height = '30px';
-            check.style.borderRadius = '50%';
-            check.style.display = 'flex';
-            check.style.alignItems = 'center';
-            check.style.justifyContent = 'center';
-            check.style.fontSize = '18px';
-            check.style.fontWeight = 'bold';
-            check.textContent = '✓';
-            this.appendChild(check);
-            
-            placedCount++;
-            
-            // Puppy reaction
-            setPuppy('wag');
-            
-            // Check if all placed
-            if (placedCount === items.length) {
-                setTimeout(() => {
-                    completeTask('decorate');
-                }, 1000);
-            }
+        // Drag events
+        itemEl.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.style.opacity = '0.6';
+        });
+        
+        itemEl.addEventListener('dragend', (e) => {
+            e.target.style.opacity = '1';
         });
         
         elements.interactiveArea.appendChild(itemEl);
     });
     
-    // Add instruction
-    const instruction = document.createElement('div');
-    instruction.style.position = 'absolute';
-    instruction.style.bottom = '20px';
-    instruction.style.left = '0';
-    instruction.style.width = '100%';
-    instruction.style.textAlign = 'center';
-    instruction.style.color = '#666';
-    instruction.style.fontSize = '18px';
-    instruction.style.background = 'rgba(255,255,255,0.8)';
-    instruction.style.padding = '12px';
-    instruction.style.borderRadius = '30px';
-    instruction.style.maxWidth = '300px';
-    instruction.style.margin = '0 auto';
-    instruction.style.left = '50%';
-    instruction.style.transform = 'translateX(-50%)';
-    instruction.textContent = '👆 Tap each decoration to place it';
-    elements.interactiveArea.appendChild(instruction);
-}
-
-// ==================== TASK 2: MOVIE POSTERS (Simplified) ====================
-function renderMovieTask() {
-    console.log('Rendering movie task');
-    
-    if (!elements.interactiveArea) return;
-    
-    showText([
-        "Now... what should we watch?",
-        "Tap the posters in order: 1-2-3"
-    ]);
-    
-    const posters = [
-        { id: 'poster1', emoji: '🎬', title: 'Love Story', order: 1, x: 30, y: 50 },
-        { id: 'poster2', emoji: '🎭', title: 'Rom Com', order: 2, x: 50, y: 50 },
-        { id: 'poster3', emoji: '🎪', title: 'Happy End', order: 3, x: 70, y: 50 }
-    ];
-    
-    let currentOrder = 1;
-    
-    posters.forEach(poster => {
-        const posterEl = document.createElement('div');
-        posterEl.id = poster.id;
-        posterEl.style.position = 'absolute';
-        posterEl.style.left = poster.x + '%';
-        posterEl.style.top = poster.y + '%';
-        posterEl.style.transform = 'translate(-50%, -50%)';
-        posterEl.style.width = '100px';
-        posterEl.style.height = '140px';
-        posterEl.style.background = 'white';
-        posterEl.style.borderRadius = '15px';
-        posterEl.style.display = 'flex';
-        posterEl.style.flexDirection = 'column';
-        posterEl.style.alignItems = 'center';
-        posterEl.style.justifyContent = 'center';
-        posterEl.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
-        posterEl.style.cursor = 'pointer';
-        posterEl.style.transition = 'all 0.3s ease';
-        posterEl.setAttribute('data-order', poster.order);
+    // Create target zones (visual drop areas)
+    targets.forEach(target => {
+        const targetEl = document.createElement('div');
+        targetEl.id = target.id;
+        targetEl.className = 'target-zone';
+        targetEl.style.left = target.x + '%';
+        targetEl.style.top = target.y + '%';
+        targetEl.style.width = '100px';
+        targetEl.style.height = '100px';
+        targetEl.style.transform = 'translate(-50%, -50%)';
+        targetEl.setAttribute('data-target', target.id.replace('target-', ''));
         
-        posterEl.innerHTML = `
-            <div style="font-size: 40px; margin-bottom: 10px;">${poster.emoji}</div>
-            <div style="font-size: 14px; font-weight: bold;">${poster.title}</div>
-            <div style="font-size: 12px; color: #888; margin-top: 5px;">Order: ${poster.order}</div>
-        `;
+        // Add visual hint
+        const hint = document.createElement('div');
+        hint.style.fontSize = '30px';
+        hint.style.opacity = '0.7';
+        hint.style.marginBottom = '5px';
+        hint.textContent = target.emoji;
+        targetEl.appendChild(hint);
         
-        posterEl.addEventListener('click', function() {
-            const order = parseInt(this.getAttribute('data-order'));
+        const label = document.createElement('div');
+        label.style.fontSize = '10px';
+        label.style.color = '#666';
+        label.textContent = target.label;
+        targetEl.appendChild(label);
+        
+        // Drop events
+        targetEl.addEventListener('dragover', (e) => e.preventDefault());
+        
+        targetEl.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetZone = e.target.closest('.target-zone');
+            if (!targetZone) return;
             
-            if (order === currentOrder) {
-                // Correct order
-                this.style.border = '3px solid #4ECDC4';
-                this.style.transform = 'translate(-50%, -50%) scale(1.05)';
+            const itemId = e.dataTransfer.getData('text/plain');
+            const item = document.getElementById(itemId);
+            if (!item) return;
+            
+            const targetFor = targetZone.id.replace('target-', '');
+            const itemType = item.id;
+            
+            if (itemType === targetFor) {
+                // Place item
+                const rect = targetZone.getBoundingClientRect();
+                item.style.left = (rect.left / window.innerWidth * 100) + '%';
+                item.style.top = (rect.top / window.innerHeight * 100) + '%';
+                item.style.position = 'fixed';
+                item.setAttribute('draggable', 'false');
+                item.style.cursor = 'default';
+                item.classList.add('placed');
                 
                 // Add checkmark
                 const check = document.createElement('div');
@@ -476,30 +429,122 @@ function renderMovieTask() {
                 check.style.right = '-10px';
                 check.style.background = '#4ECDC4';
                 check.style.color = 'white';
-                check.style.width = '30px';
-                check.style.height = '30px';
+                check.style.width = '25px';
+                check.style.height = '25px';
                 check.style.borderRadius = '50%';
                 check.style.display = 'flex';
                 check.style.alignItems = 'center';
                 check.style.justifyContent = 'center';
-                check.style.fontSize = '18px';
+                check.style.fontSize = '16px';
+                check.textContent = '✓';
+                item.appendChild(check);
+                
+                // Remove target zone
+                targetZone.remove();
+                
+                placedCount++;
+                
+                // Puppy reaction
+                setPuppy('puppy-wag.json', false, 1);
+                
+                if (placedCount === items.length) {
+                    setTimeout(() => {
+                        completeTask('decorate');
+                    }, 1000);
+                }
+            } else {
+                // Wrong placement - wiggle
+                item.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    item.style.animation = '';
+                }, 500);
+            }
+        });
+        
+        elements.interactiveArea.appendChild(targetEl);
+    });
+    
+    // Add instruction at bottom
+    const instruction = document.createElement('div');
+    instruction.className = 'task-instruction';
+    instruction.textContent = '👆 Drag each item to its matching spot';
+    elements.interactiveArea.appendChild(instruction);
+}
+
+// ==================== TASK 2: MOVIE POSTERS (Simplified) ====================
+// ==================== TASK 2: MOVIE POSTERS (Fixed Layout) ====================
+function renderMovieTask() {
+    console.log('Rendering movie task - FIXED LAYOUT');
+    
+    elements.interactiveArea.innerHTML = '';
+    
+    elements.textOverlay.innerHTML = `
+        <p class="fade-line visible" style="font-size: 1.2rem;">Now... what should we watch?</p>
+        <p class="fade-line visible" style="font-size: 0.9rem; opacity: 0.8;">Tap the posters in order: 1-2-3</p>
+    `;
+    
+    // Movie posters
+    const posters = [
+        { id: 'poster1', emoji: '🎬', title: 'Love Story', order: 1, x: 25, y: 50 },
+        { id: 'poster2', emoji: '🎭', title: 'Rom Com', order: 2, x: 50, y: 50 },
+        { id: 'poster3', emoji: '🎪', title: 'Happy End', order: 3, x: 75, y: 50 }
+    ];
+    
+    let currentOrder = 1;
+    
+    posters.forEach(poster => {
+        const posterEl = document.createElement('div');
+        posterEl.id = poster.id;
+        posterEl.className = 'poster';
+        posterEl.style.left = poster.x + '%';
+        posterEl.style.top = poster.y + '%';
+        posterEl.style.transform = 'translate(-50%, -50%)';
+        posterEl.style.width = '100px';
+        posterEl.style.height = '130px';
+        posterEl.setAttribute('data-order', poster.order);
+        
+        posterEl.innerHTML = `
+            <div style="font-size: 40px; margin-bottom: 5px;">${poster.emoji}</div>
+            <div style="font-size: 11px; font-weight: bold; text-align: center;">${poster.title}</div>
+            <div style="font-size: 10px; color: #888; margin-top: 5px;">Order: ${poster.order}</div>
+        `;
+        
+        posterEl.addEventListener('click', function() {
+            const order = parseInt(this.getAttribute('data-order'));
+            
+            if (order === currentOrder) {
+                // Correct
+                this.style.border = '4px solid #4ECDC4';
+                this.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                this.style.pointerEvents = 'none';
+                
+                // Add checkmark
+                const check = document.createElement('div');
+                check.style.position = 'absolute';
+                check.style.top = '-8px';
+                check.style.right = '-8px';
+                check.style.background = '#4ECDC4';
+                check.style.color = 'white';
+                check.style.width = '24px';
+                check.style.height = '24px';
+                check.style.borderRadius = '50%';
+                check.style.display = 'flex';
+                check.style.alignItems = 'center';
+                check.style.justifyContent = 'center';
+                check.style.fontSize = '14px';
                 check.textContent = '✓';
                 this.appendChild(check);
                 
-                this.style.pointerEvents = 'none';
-                
                 currentOrder++;
-                
-                setPuppy('wag');
+                setPuppy('puppy-wag.json', false, 1);
                 
                 if (currentOrder > 3) {
-                    // All done
                     setTimeout(() => {
                         completeTask('movie');
                     }, 500);
                 }
             } else {
-                // Wrong order
+                // Wrong
                 this.style.animation = 'shake 0.5s ease';
                 setTimeout(() => {
                     this.style.animation = '';
@@ -509,23 +554,31 @@ function renderMovieTask() {
         
         elements.interactiveArea.appendChild(posterEl);
     });
+    
+    // Add instruction
+    const instruction = document.createElement('div');
+    instruction.className = 'task-instruction';
+    instruction.textContent = '👆 Tap in order: 1 → 2 → 3';
+    elements.interactiveArea.appendChild(instruction);
 }
 
 // ==================== TASK 3: DANCE (Simplified) ====================
+// ==================== TASK 3: DANCE (Fixed Layout) ====================
 function renderDanceTask() {
-    console.log('Rendering dance task');
+    console.log('Rendering dance task - FIXED LAYOUT');
     
-    if (!elements.interactiveArea) return;
+    elements.interactiveArea.innerHTML = '';
     
-    showText([
-        "Time to set the mood with music...",
-        "Tap all 4 dots to dance!"
-    ]);
+    elements.textOverlay.innerHTML = `
+        <p class="fade-line visible" style="font-size: 1.2rem;">Time to set the mood with music...</p>
+        <p class="fade-line visible" style="font-size: 0.9rem; opacity: 0.8;">Tap all 4 dots to dance!</p>
+    `;
     
+    // Create rhythm dots - better positioned
     const dots = [
-        { id: 'dot1', emoji: '✨', x: 30, y: 40 },
+        { id: 'dot1', emoji: '✨', x: 30, y: 45 },
         { id: 'dot2', emoji: '🎵', x: 50, y: 30 },
-        { id: 'dot3', emoji: '💫', x: 70, y: 40 },
+        { id: 'dot3', emoji: '💫', x: 70, y: 45 },
         { id: 'dot4', emoji: '🎉', x: 50, y: 60 }
     ];
     
@@ -534,44 +587,40 @@ function renderDanceTask() {
     dots.forEach(dot => {
         const dotEl = document.createElement('div');
         dotEl.id = dot.id;
-        dotEl.style.position = 'absolute';
+        dotEl.className = 'rhythm-dot';
         dotEl.style.left = dot.x + '%';
         dotEl.style.top = dot.y + '%';
         dotEl.style.transform = 'translate(-50%, -50%)';
-        dotEl.style.width = '70px';
-        dotEl.style.height = '70px';
-        dotEl.style.borderRadius = '50%';
-        dotEl.style.background = 'rgba(255, 255, 255, 0.9)';
-        dotEl.style.display = 'flex';
-        dotEl.style.alignItems = 'center';
-        dotEl.style.justifyContent = 'center';
-        dotEl.style.fontSize = '40px';
-        dotEl.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
-        dotEl.style.cursor = 'pointer';
-        dotEl.style.transition = 'all 0.2s ease';
         dotEl.textContent = dot.emoji;
         
         dotEl.addEventListener('click', function() {
             if (this.classList.contains('tapped')) return;
             
-            this.classList.add('tapped');
-            this.style.background = '#FF9EB5';
-            this.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            this.classList.add('tapped', 'hit');
+            this.style.background = '#4ECDC4';
             this.style.color = 'white';
+            this.style.transform = 'translate(-50%, -50%) scale(1.2)';
             
             tappedCount++;
             
-            setPuppy('hop');
+            // Puppy reaction
+            setPuppy('puppy-hop.json', false, 1);
             
             if (tappedCount === dots.length) {
                 setTimeout(() => {
                     completeTask('dance');
-                }, 500);
+                }, 800);
             }
         });
         
         elements.interactiveArea.appendChild(dotEl);
     });
+    
+    // Add instruction
+    const instruction = document.createElement('div');
+    instruction.className = 'task-instruction';
+    instruction.textContent = '👆 Tap all 4 dots to dance!';
+    elements.interactiveArea.appendChild(instruction);
 }
 
 // ==================== TASK 4: GIFT (Simplified) ====================
