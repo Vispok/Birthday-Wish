@@ -26,6 +26,52 @@ const elements = {
     progressDots: document.querySelectorAll('.progress-dot')
 };
 
+// ==================== FIX FOR DRAG DELAY ====================
+// Add this near the top of your file, after the DOM elements
+
+// Disable default drag behavior on images and links
+document.addEventListener('dragstart', (e) => {
+    if (e.target.tagName === 'IMG' || e.target.tagName === 'A') {
+        e.preventDefault();
+    }
+});
+
+// Make draggable elements respond instantly
+function makeDraggableInstant() {
+    const draggables = document.querySelectorAll('[draggable="true"]');
+    draggables.forEach(el => {
+        // Remove any default browser drag delay
+        el.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // Prevents text selection
+        }, { passive: false });
+        
+        el.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents touch delay
+            // Provide haptic feedback (optional)
+            if (navigator.vibrate) navigator.vibrate(10);
+        }, { passive: false });
+    });
+}
+
+// Call this whenever new draggable elements are created
+function refreshDraggables() {
+    setTimeout(makeDraggableInstant, 100);
+}
+
+// Override the drag start to be instant
+const originalDragStart = document.body.ondragstart;
+document.body.ondragstart = (e) => {
+    if (e.target.getAttribute('draggable') === 'true') {
+        // Allow drag but prevent default browser handling
+        e.dataTransfer.effectAllowed = 'move';
+        return true;
+    }
+    return false;
+};
+
+// Call on load
+window.addEventListener('load', makeDraggableInstant);
+
 // Check if elements exist
 console.log('Elements loaded:', {
     puppy: !!elements.puppy,
@@ -470,6 +516,8 @@ function renderDecorateTask() {
     instruction.textContent = '👆 Drag each item to its matching spot';
     elements.interactiveArea.appendChild(instruction);
 }
+// After creating draggable elements in any task, add:
+refreshDraggables();
 
 // ==================== TASK 2: MOVIE POSTERS (Simplified) ====================
 // ==================== TASK 2: MOVIE POSTERS (Fixed Layout) ====================
@@ -561,6 +609,8 @@ function renderMovieTask() {
     instruction.textContent = '👆 Tap in order: 1 → 2 → 3';
     elements.interactiveArea.appendChild(instruction);
 }
+// After creating draggable elements in any task, add:
+refreshDraggables();
 
 // ==================== TASK 3: DANCE (Simplified) ====================
 // ==================== TASK 3: DANCE (Fixed Layout) ====================
@@ -622,7 +672,8 @@ function renderDanceTask() {
     instruction.textContent = '👆 Tap all 4 dots to dance!';
     elements.interactiveArea.appendChild(instruction);
 }
-
+// After creating draggable elements in any task, add:
+refreshDraggables();
 // ==================== TASK 4: GIFT (Simplified) ====================
 function renderGiftTask() {
     console.log('Rendering gift task');
@@ -704,7 +755,8 @@ function renderGiftTask() {
         }, 1500);
     }
 }
-
+// After creating draggable elements in any task, add:
+refreshDraggables();
 // ==================== SCENE 3: BUILD-UP ====================
 function renderBuildup() {
     console.log('Rendering buildup scene');
